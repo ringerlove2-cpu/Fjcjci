@@ -1,0 +1,319 @@
+```html
+<!DOCTYPE html>
+<html lang="hi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veer.Game Big/Small Live Predictor & Pattern Analyzer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gamingDark: '#080c14',
+                        gamingCard: '#111827',
+                        gamingBorder: '#1f293d',
+                        gamingHover: '#1a2436',
+                        neonGreen: '#00ff88',
+                        neonRed: '#ff3366',
+                        neonGold: '#ffb703',
+                        neonPurple: '#a855f7',
+                        neonCyan: '#06b6d4'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #080c14;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(168, 85, 247, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(6, 182, 212, 0.1) 0%, transparent 40%);
+        }
+        
+        .glow-green { box-shadow: 0 0 15px rgba(0, 255, 136, 0.35); }
+        .glow-red { box-shadow: 0 0 15px rgba(255, 51, 102, 0.35); }
+        .glow-cyan { box-shadow: 0 0 15px rgba(6, 182, 212, 0.35); }
+        .glow-purple { box-shadow: 0 0 18px rgba(168, 85, 247, 0.4); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #080c14; }
+        ::-webkit-scrollbar-thumb { background: #1f293d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-3 md:p-6">
+
+    <!-- Top Navigation Header -->
+    <header class="max-w-7xl w-full mx-auto mb-5 pb-4 border-b border-gamingBorder flex flex-col md:flex-row justify-between items-center gap-3">
+        <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-neonPurple via-neonCyan to-neonGreen flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg glow-purple">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-neonCyan via-slate-100 to-neonGreen">
+                    VEER.GAME PATTERN ANALYZER
+                </h1>
+                <p class="text-xs text-slate-400">Live Game Data Connected | Transition Statistics & Pattern Prediction</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 bg-gamingCard px-3 py-1.5 rounded-xl border border-gamingBorder text-xs">
+            <span class="w-2.5 h-2.5 rounded-full bg-neonGreen animate-pulse"></span>
+            <span class="text-slate-300">Live Analysis Status: <strong class="text-neonGreen">Active</strong></span>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-5 mb-6">
+
+        <!-- LEFT COLUMN: Input Controls & Realtime Prediction -->
+        <section class="lg:col-span-5 space-y-5">
+
+            <!-- Real-time Prediction Box -->
+            <div class="bg-gamingCard border border-gamingBorder rounded-2xl p-4 md:p-5 relative overflow-hidden shadow-2xl">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-neonGold"></i>
+                        Next Period Prediction
+                    </h2>
+                    <span id="lastRefLabel" class="text-[11px] text-neonCyan bg-neonCyan/10 border border-neonCyan/30 px-2 py-0.5 rounded-full font-mono">
+                        Based on Last: -
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-12 gap-3 mb-4">
+                    <div class="col-span-8">
+                        <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Target Period</label>
+                        <input type="text" id="targetPeriod" value="20261018100010178" class="w-full bg-gamingDark border border-gamingBorder focus:border-neonCyan rounded-xl px-3 py-2 text-xs font-mono text-neonCyan outline-none">
+                    </div>
+                    <div class="col-span-4 flex items-end">
+                        <button onclick="autoIncrementTargetPeriod()" class="w-full py-2 bg-gamingBorder hover:bg-slate-700 text-xs text-slate-200 font-bold rounded-xl transition flex items-center justify-center gap-1">
+                            +1 Period
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Strategy Toggle Switches -->
+                <div class="bg-gamingDark/80 p-2.5 rounded-xl border border-gamingBorder/60 mb-4 text-xs space-y-2">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Active Strategy Mode:</span>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <button onclick="setStrategyMode('hybrid')" id="stratHybrid" class="py-1 px-2 rounded-lg font-bold text-[10px] border border-neonCyan bg-neonCyan/20 text-neonCyan transition">
+                            Hybrid Smart
+                        </button>
+                        <button onclick="setStrategyMode('dragon')" id="stratDragon" class="py-1 px-2 rounded-lg font-bold text-[10px] border border-gamingBorder bg-gamingDark text-slate-400 hover:text-slate-200 transition">
+                            Dragon Follow
+                        </button>
+                        <button onclick="setStrategyMode('reversal')" id="stratReversal" class="py-1 px-2 rounded-lg font-bold text-[10px] border border-gamingBorder bg-gamingDark text-slate-400 hover:text-slate-200 transition">
+                            Pattern Break
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Prediction Display Card -->
+                <div id="predCard" class="bg-gradient-to-br from-gamingDark to-slate-900 border border-gamingBorder rounded-xl p-4 text-center">
+                    <span class="text-[11px] text-slate-400 uppercase tracking-widest font-semibold block mb-1">RECOMMENDED PLAY</span>
+                    
+                    <div class="flex items-center justify-center gap-4 my-2">
+                        <div id="predOutcomeBadge" class="text-3xl font-black px-6 py-2 rounded-2xl border bg-slate-800 border-slate-700 text-slate-300">
+                            ---
+                        </div>
+                        <div class="text-left">
+                            <div id="predConf" class="text-2xl font-black text-neonGold">0%</div>
+                            <div class="text-[10px] text-slate-400">Calculated Confidence</div>
+                        </div>
+                    </div>
+
+                    <!-- Prediction Reasons/Signals -->
+                    <div class="mt-3 text-left bg-gamingDark/90 p-2.5 rounded-lg border border-gamingBorder text-xs space-y-1">
+                        <div class="font-bold text-slate-300 flex items-center gap-1.5 text-[11px]">
+                            <i class="fa-solid fa-microchip text-neonCyan"></i> Key Analysis Signal:
+                        </div>
+                        <p id="predSignal" class="text-slate-400 text-[11px] leading-relaxed">
+                            Game history enter karein prediction generation ke liye.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Quick Entry Keyboard (Numbers & Outcome) -->
+            <div class="bg-gamingCard border border-gamingBorder rounded-2xl p-4 md:p-5 shadow-xl">
+                <h2 class="text-sm font-bold text-slate-200 mb-2 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-keyboard text-neonCyan"></i>
+                    Add Live Result (Fast Entry)
+                </h2>
+                <p class="text-xs text-slate-400 mb-3">Single click se naya game result add karein aur statistics auto-update karein.</p>
+
+                <!-- Number Buttons (0 to 9) -->
+                <div class="grid grid-cols-5 gap-2 mb-3">
+                    <button onclick="addResultFromNum(0)" class="py-2 rounded-xl font-bold text-xs bg-purple-950/80 border border-purple-500/50 text-purple-300 hover:bg-purple-900 transition">0 (Violet/Red)</button>
+                    <button onclick="addResultFromNum(1)" class="py-2 rounded-xl font-bold text-xs bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 hover:bg-emerald-900 transition">1 (Small)</button>
+                    <button onclick="addResultFromNum(2)" class="py-2 rounded-xl font-bold text-xs bg-rose-950/80 border border-rose-500/50 text-rose-300 hover:bg-rose-900 transition">2 (Small)</button>
+                    <button onclick="addResultFromNum(3)" class="py-2 rounded-xl font-bold text-xs bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 hover:bg-emerald-900 transition">3 (Small)</button>
+                    <button onclick="addResultFromNum(4)" class="py-2 rounded-xl font-bold text-xs bg-rose-950/80 border border-rose-500/50 text-rose-300 hover:bg-rose-900 transition">4 (Small)</button>
+                    <button onclick="addResultFromNum(5)" class="py-2 rounded-xl font-bold text-xs bg-purple-950/80 border border-purple-500/50 text-purple-300 hover:bg-purple-900 transition">5 (Violet/Grn)</button>
+                    <button onclick="addResultFromNum(6)" class="py-2 rounded-xl font-bold text-xs bg-rose-950/80 border border-rose-500/50 text-rose-300 hover:bg-rose-900 transition">6 (Big)</button>
+                    <button onclick="addResultFromNum(7)" class="py-2 rounded-xl font-bold text-xs bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 hover:bg-emerald-900 transition">7 (Big)</button>
+                    <button onclick="addResultFromNum(8)" class="py-2 rounded-xl font-bold text-xs bg-rose-950/80 border border-rose-500/50 text-rose-300 hover:bg-rose-900 transition">8 (Big)</button>
+                    <button onclick="addResultFromNum(9)" class="py-2 rounded-xl font-bold text-xs bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 hover:bg-emerald-900 transition">9 (Big)</button>
+                </div>
+
+                <!-- Bulk Import Box -->
+                <details class="bg-gamingDark/70 rounded-xl border border-gamingBorder/70 text-xs">
+                    <summary class="p-2.5 font-semibold text-slate-300 cursor-pointer flex justify-between items-center">
+                        <span><i class="fa-solid fa-file-import text-neonGold mr-1"></i> Bulk Copy-Paste Results</span>
+                        <i class="fa-solid fa-chevron-down text-slate-500"></i>
+                    </summary>
+                    <div class="p-3 border-t border-gamingBorder space-y-2">
+                        <textarea id="bulkInput" rows="3" placeholder="Comma separated numbers enter karein. Example: 9,5,5,6,3,8,7,3,3,3,0,8" class="w-full bg-gamingDark border border-gamingBorder rounded-lg p-2 text-xs font-mono text-slate-200 outline-none focus:border-neonCyan"></textarea>
+                        <button onclick="processBulkImport()" class="w-full py-2 bg-neonCyan/20 hover:bg-neonCyan/30 border border-neonCyan text-neonCyan font-bold rounded-lg transition">
+                            Import Sequence
+                        </button>
+                    </div>
+                </details>
+            </div>
+
+        </section>
+
+        <!-- RIGHT COLUMN: Statistical Engine & Game History Table -->
+        <section class="lg:col-span-7 space-y-5">
+
+            <!-- Stats Overview Bar -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="bg-gamingCard border border-gamingBorder rounded-xl p-3 text-center">
+                    <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">Total Games</span>
+                    <span id="statTotal" class="text-xl font-black text-slate-100">0</span>
+                </div>
+                <div class="bg-gamingCard border border-gamingBorder rounded-xl p-3 text-center">
+                    <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">Big Count</span>
+                    <span id="statBig" class="text-xl font-black text-neonGreen">0 (0%)</span>
+                </div>
+                <div class="bg-gamingCard border border-gamingBorder rounded-xl p-3 text-center">
+                    <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">Small Count</span>
+                    <span id="statSmall" class="text-xl font-black text-neonRed">0 (0%)</span>
+                </div>
+                <div class="bg-gamingCard border border-gamingBorder rounded-xl p-3 text-center">
+                    <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">Active Streak</span>
+                    <span id="statStreak" class="text-xl font-black text-neonGold">-</span>
+                </div>
+            </div>
+
+            <!-- Detailed Statistical Engine Panel -->
+            <div class="bg-gamingCard border border-gamingBorder rounded-2xl p-4 md:p-5 shadow-xl space-y-4">
+                <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center justify-between">
+                    <span class="flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-neonGreen"></i>
+                        Statistical Transition Analysis
+                    </span>
+                    <span class="text-[10px] font-normal text-slate-400">Auto-Calculated from Live Log</span>
+                </h3>
+
+                <!-- Transition Breakdown Grids -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <!-- Streak Transitions (After Small Streak -> Big %) -->
+                    <div class="bg-gamingDark/80 rounded-xl p-3 border border-gamingBorder">
+                        <h4 class="text-xs font-bold text-slate-300 mb-2 border-b border-gamingBorder/60 pb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-arrows-split-up-and-left text-neonGold"></i>
+                            Small Streak -> Reversal to BIG %
+                        </h4>
+                        <div id="streakTransitionBox" class="space-y-1.5 text-xs text-slate-300 max-h-36 overflow-y-auto pr-1">
+                            <div class="text-slate-500 italic text-[11px]">No transition data yet.</div>
+                        </div>
+                    </div>
+
+                    <!-- Transition By Specific Numbers -->
+                    <div class="bg-gamingDark/80 rounded-xl p-3 border border-gamingBorder">
+                        <h4 class="text-xs font-bold text-slate-300 mb-2 border-b border-gamingBorder/60 pb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-hashtag text-neonCyan"></i>
+                            Specific Number -> Next Outcome
+                        </h4>
+                        <div id="numberTransitionBox" class="space-y-1.5 text-xs text-slate-300 max-h-36 overflow-y-auto pr-1">
+                            <div class="text-slate-500 italic text-[11px]">No transition data yet.</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Game History Table -->
+            <div class="bg-gamingCard border border-gamingBorder rounded-2xl p-4 md:p-5 shadow-xl">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                    <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-neonPurple"></i>
+                        Game Pattern History Log
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <button onclick="loadUserScreenshotDataset()" class="px-2.5 py-1 bg-gamingBorder hover:bg-slate-700 text-xs text-slate-300 rounded-lg transition font-semibold">
+                            Load User Dataset
+                        </button>
+                        <button onclick="clearHistory()" class="px-2.5 py-1 bg-rose-950/40 hover:bg-rose-900/60 text-neonRed border border-rose-800/40 text-xs rounded-lg transition">
+                            Clear Log
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-gamingBorder">
+                    <table class="w-full text-left text-xs font-mono">
+                        <thead class="bg-gamingDark text-slate-400 border-b border-gamingBorder">
+                            <tr>
+                                <th class="p-2.5">Period</th>
+                                <th class="p-2.5">Number</th>
+                                <th class="p-2.5">Big / Small</th>
+                                <th class="p-2.5">Color</th>
+                                <th class="p-2.5 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-gamingBorder/50">
+                            <tr>
+                                <td colspan="5" class="p-4 text-center text-slate-500 italic">No history logged yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-7xl w-full mx-auto border-t border-gamingBorder/60 pt-3 text-center text-[11px] text-slate-500">
+        <p>Veer.Game Live Statistical Analyzer | Keval Mathematical Patterning & Probability Engine ke base par predictions calculated hoti hain.</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Global State
+        let gameHistory = [];
+        let strategyMode = 'hybrid'; // 'hybrid', 'dragon', 'reversal'
+
+        // User Dataset from attached Screenshots (10118 to 10177 sequence)
+        const screenshotDataset = [
+            { period: "20261018100010118", number: 9 },
+            { period: "20261018100010119", number: 5 },
+            { period: "20261018100010120", number: 5 },
+            { period: "20261018100010121", number: 6 },
+            { period: "20261018100010122", number: 3 },
+            { period: "20261018100010123", number: 8 },
+            { period: "20261018100010124", number: 7 },
+            { period: "20261018100010125", number: 3 },
+            { period: "20261018100010126", number: 3 },
+            { period: "20261018100010127", number: 3 },
+            { period: "20261018100010158", number: 0 },
+            { period: "20261018100010159", number: 8 },
+            { period: "20261018100010160", number: 6 },
